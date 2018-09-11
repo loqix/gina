@@ -32,5 +32,11 @@
     <ClInclude Include="capcom\resource.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="native.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="capcom\payload.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

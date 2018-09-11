@@ -177,7 +177,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="capcom\driver.hpp" />
+    <ClInclude Include="capcom\payload.hpp" />
     <ClInclude Include="capcom\resource.hpp" />
+    <ClInclude Include="native.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
