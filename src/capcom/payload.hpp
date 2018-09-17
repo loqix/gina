@@ -5,39 +5,44 @@
 #include <memory>
 #include <Windows.h>
 
+#include "capcom.hpp"
+#include "payload.hpp"
+
 namespace capcom
 {
-	const int payload_code_template_function_ptr_offset = 0x2;
-	const unsigned char payload_code_template[] = {
-		0x48, 0xB8, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // movabs rax, function_ptr
+	const unsigned long payload_code_function_ptr_offset = 0x2;
+	const unsigned char payload_code_template[] =
+	{
+		0x48, 0xB8, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // movabs rax, user_function_ptr
 		0xFF, 0xE0                                                  // jmp rax
 	};
 
 	struct payload
 	{
-		void* function_ptr;
+	private:
+		void* code_ptr = code;
 		unsigned char code[sizeof(payload_code_template)];
 
-		void build(std::uintptr_t function_ptr)
-		{
-			// fill this member to point to the actual code buffer (as required by capcom)
-			this->function_ptr = this->code;
-
-			// copy our code template into the executable page
-			memcpy(this->code, payload_code_template, sizeof(payload_code_template));
-
-			// fill in the function pointer that will be copied into rax, then jmp'd to
-			*(std::uintptr_t*)(this->code + payload_code_template_function_ptr_offset) = function_ptr;
-		}
-
-		void* operator new(std::size_t size)
+	public:
+		auto operator new(std::size_t size) -> void*
 		{
 			return VirtualAlloc(NULL, size, MEM_COMMIT, PAGE_EXECUTE_READWRITE);
 		}
 
-		void operator delete(void* ptr, std::size_t size)
+		auto operator delete(void* ptr, std::size_t size) -> void
 		{
 			VirtualFree(ptr, size, MEM_RELEASE);
+		}
+
+		auto assemble(std::uint64_t function_ptr)
+		{
+			memcpy(code, payload_code_template, sizeof(payload_code_template));
+			*(std::uint64_t*)(code + payload_code_function_ptr_offset) = function_ptr;
+		}
+
+		auto get() const noexcept -> const void*
+		{
+			return &code_ptr;
 		}
 	};
 }

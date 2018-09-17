@@ -24,6 +24,21 @@
     <ClCompile Include="capcom\resource.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="native\native.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="native\registry.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="capcom\capcom.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="memory\memory.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="native\security.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="capcom\driver.hpp">
@@ -32,10 +47,25 @@
     <ClInclude Include="capcom\resource.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="native.hpp">
+    <ClInclude Include="capcom\payload.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="capcom\payload.hpp">
+    <ClInclude Include="native\native.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="native\registry.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="memory\process.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="memory\memory.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="capcom\capcom.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="native\security.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

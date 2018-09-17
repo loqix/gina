@@ -1,0 +1,166 @@
+Opened \\.\pipe\debug
+Waiting to reconnect...
+Connected to Windows 10 17134 x64 target at (Mon Sep 10 22:54:15.171 2018 (UTC + 9:30)), ptr64 TRUE
+Kernel Debugger connection established.
+
+************* Path validation summary **************
+Response                         Time (ms)     Location
+Deferred                                       srv*
+
+************* Path validation summary **************
+Response                         Time (ms)     Location
+Deferred                                       srv*
+Symbol search path is: srv*
+Executable search path is: srv*
+Windows 10 Kernel Version 17134 MP (2 procs) Free x64
+Product: WinNt, suite: TerminalServer SingleUserTS
+Built by: 17134.1.amd64fre.rs4_release.180410-1804
+Machine Name:
+Kernel base = 0xfffff800`bda17000 PsLoadedModuleList = 0xfffff800`bddc5170
+Debug session time: Mon Sep 10 21:50:50.482 2018 (UTC + 9:30)
+System Uptime: 0 days 0:02:57.536
+Break instruction exception - code 80000003 (first chance)
+*******************************************************************************
+*                                                                             *
+*   You are seeing this message because you pressed either                    *
+*       CTRL+C (if you run console kernel debugger) or,                       *
+*       CTRL+BREAK (if you run GUI kernel debugger),                          *
+*   on your debugger machine's keyboard.                                      *
+*                                                                             *
+*                   THIS IS NOT A BUG OR A SYSTEM CRASH                       *
+*                                                                             *
+* If you did not intend to break into the debugger, press the "g" key, then   *
+* press the "Enter" key now.  This message might immediately reappear.  If it *
+* does, press "g" and "Enter" again.                                          *
+*                                                                             *
+*******************************************************************************
+nt!DbgBreakPointWithStatus+0x1:
+fffff800`bdbc78d1 c3              ret
+0: kd> g
+Break instruction exception - code 80000003 (first chance)
+*******************************************************************************
+*                                                                             *
+*   You are seeing this message because you pressed either                    *
+*       CTRL+C (if you run console kernel debugger) or,                       *
+*       CTRL+BREAK (if you run GUI kernel debugger),                          *
+*   on your debugger machine's keyboard.                                      *
+*                                                                             *
+*                   THIS IS NOT A BUG OR A SYSTEM CRASH                       *
+*                                                                             *
+* If you did not intend to break into the debugger, press the "g" key, then   *
+* press the "Enter" key now.  This message might immediately reappear.  If it *
+* does, press "g" and "Enter" again.                                          *
+*                                                                             *
+*******************************************************************************
+nt!DbgBreakPointWithStatus:
+fffff800`bdbc78d0 cc              int     3
+1: kd> !object ffffa0036322cbd0
+Object: ffffa0036322cbd0  Type: (ffffb089a315dbe0) Section
+    ObjectHeader: ffffa0036322cba0 (new version)
+    HandleCount: 1  PointerCount: 32769
+    Directory Object: ffffa0036322e060  Name: PhysicalMemory
+1: kd> !findhandle ffffa0036322cbd0
+                                                              
+                   [ffffb089a30cf440 System]
+   438: Entry ffffa003648370e0 Granted Access f001f (Inherit)
+                                                          
+1: kd> !trueref ffffa0036322cbd0
+ffffa0036322cbd0: HandleCount: 1 PointerCount: 32769 RealPointerCount: 2
+
+1: kd> dt nt!_FILE_OBJECT ffffa0036322cbd0
+   +0x000 Type             : 0n0
+   +0x002 Size             : 0n1280
+   +0x008 DeviceObject     : 0x00140000`00000220 _DEVICE_OBJECT
+   +0x010 Vpb              : 0x00000101`00020001 _VPB
+   +0x018 FsContext        : 0x0000000c`05000000 Void
+   +0x020 FsContext2       : 0x05000000`00000201 Void
+   +0x028 SectionObjectPointer : 0xfffff800`bdde3380 _SECTION_OBJECT_POINTERS
+   +0x030 PrivateCacheMap  : 0x0000ffff`ffffffff Void
+   +0x038 FinalStatus      : 0n0
+   +0x040 RelatedFileObject : 0x20666e57`0b0a040a _FILE_OBJECT
+   +0x048 LockOperation    : 0x56 'V'
+   +0x049 DeletePending    : 0xd4 ''
+   +0x04a ReadAccess       : 0x3d '='
+   +0x04b WriteAccess      : 0xae ''
+   +0x04c DeleteAccess     : 0x2 ''
+   +0x04d SharedRead       : 0x9 ''
+   +0x04e SharedWrite      : 0xe7 ''
+   +0x04f SharedDelete     : 0x4b 'K'
+   +0x050 Flags            : 0x880905
+   +0x058 FileName         : _UNICODE_STRING "--- memory read error at address 0x00000000`0000056f ---"
+   +0x068 CurrentByteOffset : _LARGE_INTEGER 0xffffa003`6526a0b8
+   +0x070 Waiters          : 0x63218d08
+   +0x074 Busy             : 0xffffa003
+   +0x078 LastLock         : 0xffffb089`a6321580 Void
+   +0x080 Lock             : _KEVENT
+   +0x098 Event            : _KEVENT
+   +0x0b0 CompletionContext : 0x00000011`00000000 _IO_COMPLETION_CONTEXT
+   +0x0b8 IrpListLock      : 0
+   +0x0c0 IrpList          : _LIST_ENTRY [ 0x00000000`00000000 - 0x00000000`00000000 ]
+   +0x0d0 FileObjectExtension : (null) 
+1: kd> dx -id 0,0,ffffb089a30cf440 -r1 ((ntkrnlmp!_SECTION_OBJECT_POINTERS *)0xfffff800bdde3380)
+((ntkrnlmp!_SECTION_OBJECT_POINTERS *)0xfffff800bdde3380)                 : 0xfffff800bdde3380 [Type: _SECTION_OBJECT_POINTERS *]
+    [+0x000] DataSectionObject : 0xffffa00363229290 [Type: void *]
+    [+0x008] SharedCacheMap   : 0x0 [Type: void *]
+    [+0x010] ImageSectionObject : 0x0 [Type: void *]
+1: kd> !ca 0xffffa00363229290
+
+ControlArea  @ ffffa00363229290
+  Segment      fffff800bdde3380  Flink      0000000000000000  Blink        0000000000000000
+  Section Ref                 0  Pfn Ref                   0  Mapped Views                0
+  User Ref                    0  WaitForDel                0  Flush Count                78
+  File Object  0000000000000000  ModWriteCount            12  System Views             9f26
+  WritableRefs         b418b98b  
+  Flags (0) 
+
+      Pagefile-backed section
+
+Segment @ fffff800bdde3380
+  ControlArea       ffffa00363229290  ExtendInfo    0000000000000000
+  Total Ptes                       0
+  Segment Size                     1  Committed            363248a80
+  CreatingProcess                  0  FirstMappedVa              400
+  ProtoPtes                        0
+  Flags (0)
+
+Subsection 1 @ ffffa00363229310
+  ControlArea  0304020105000420  Starting Sector 3ffffffffff  Number Of Sectors ffffffff
+  Base Pte     0d06096086480165  Ptes In Subsect ffffffff  Unused Ptes   3fffffff
+  Flags                ffffffff  Sector Offset        fff  Protection          1f
+  GlobalMemory Accessed Static 
+
+Subsection 2 @ ffffffff00303130
+  ControlArea  0000000000000000  Starting Sector        0  Number Of Sectors    0
+  Base Pte     0000000000000000  Ptes In Subsect        0  Unused Ptes          0
+  Flags                       0  Sector Offset          0  Protection           0
+1: kd> dt nt!_SEGMENT fffff800bdde3380
+   +0x000 ControlArea      : 0xffffa003`63229290 _CONTROL_AREA
+   +0x008 TotalNumberOfPtes : 0
+   +0x00c SegmentFlags     : _SEGMENT_FLAGS
+   +0x010 NumberOfCommittedPages : 0
+   +0x018 SizeOfSegment    : 1
+   +0x020 ExtendInfo       : (null) 
+   +0x020 BasedAddress     : (null) 
+   +0x028 SegmentLock      : _EX_PUSH_LOCK
+   +0x030 u1               : <unnamed-tag>
+   +0x038 u2               : <unnamed-tag>
+   +0x040 PrototypePte     : (null) 
+1: kd> dx -id 0,0,ffffb089a30cf440 -r1 (*((ntkrnlmp!_SEGMENT_FLAGS *)0xfffff800bdde338c))
+(*((ntkrnlmp!_SEGMENT_FLAGS *)0xfffff800bdde338c))                 [Type: _SEGMENT_FLAGS]
+    [+0x000 ( 9: 0)] TotalNumberOfPtes4132 : 0x0 [Type: unsigned short]
+    [+0x000 (11:10)] Spare0           : 0x0 [Type: unsigned short]
+    [+0x000 (12:12)] LargePages       : 0x0 [Type: unsigned short]
+    [+0x000 (13:13)] DebugSymbolsLoaded : 0x0 [Type: unsigned short]
+    [+0x000 (14:14)] WriteCombined    : 0x0 [Type: unsigned short]
+    [+0x000 (15:15)] NoCache          : 0x0 [Type: unsigned short]
+    [+0x000] Short0           : 0x0 [Type: unsigned short]
+    [+0x002 ( 0: 0)] Unused           : 0x0 [Type: unsigned char]
+    [+0x002 ( 5: 1)] DefaultProtectionMask : 0x0 [Type: unsigned char]
+    [+0x002 ( 6: 6)] Binary32         : 0x0 [Type: unsigned char]
+    [+0x002 ( 7: 7)] ContainsDebug    : 0x0 [Type: unsigned char]
+    [+0x002] UChar1           : 0x0 [Type: unsigned char]
+    [+0x003 ( 0: 0)] ForceCollision   : 0x0 [Type: unsigned char]
+    [+0x003 ( 3: 1)] ImageSigningType : 0x0 [Type: unsigned char]
+    [+0x003 ( 7: 4)] ImageSigningLevel : 0x0 [Type: unsigned char]
+    [+0x003] UChar2           : 0x0 [Type: unsigned char]
+1: kd> g

@@ -2,6 +2,10 @@
 
 #include <fstream>
 
+#include "../native/native.hpp"
+#include "../native/registry.hpp"
+#include "../native/security.hpp"
+
 auto capcom::resource::get_file_name() -> const std::filesystem::path
 {
 	return "Capcom.sys";
@@ -17,19 +21,67 @@ auto capcom::resource::get_full_path() -> const std::filesystem::path
 	return get_path() / get_file_name();
 }
 
-auto capcom::resource::drop() -> void
+auto capcom::resource::drop() -> bool
 {
 	auto file = std::ofstream(get_full_path(), std::ios::binary | std::ios::trunc);
+
+	if (!file.is_open())
+	{
+		return false;
+	}
 
 	std::transform(payload_buffer.cbegin(), payload_buffer.cend(), std::ostreambuf_iterator<char>(file), [](unsigned char byte) -> char
 	{
 		return byte ^ payload_key;
 	});
+
+	return true;
 }
 
-auto capcom::resource::pickup() -> void
+auto capcom::resource::pickup() -> bool
 {
 	std::filesystem::remove(get_full_path());
+
+	return std::filesystem::exists(get_full_path()) == false;
+}
+
+auto capcom::resource::load() -> bool
+{
+	auto process_token = native::security::open_token(GetCurrentProcess(), TOKEN_ADJUST_PRIVILEGES);
+	native::security::set_privilege(process_token, "SeLoadDriverPrivilege", true);
+
+	auto services_key = native::registry::get_key(HKEY_LOCAL_MACHINE, "SYSTEM\\CurrentControlSet\\Services");
+	auto driver_key = native::registry::get_key(services_key, "Capcom");
+
+	native::registry::set_value(driver_key, "DisplayName", std::string("Capcom"));
+	native::registry::set_value(driver_key, "ImagePath", "\\??\\" + get_full_path().string());
+	native::registry::set_value(driver_key, "Group", std::string("Base"));
+
+	native::registry::set_value(driver_key, "ErrorControl", 0ul);
+	native::registry::set_value(driver_key, "Start", 1ul);
+	native::registry::set_value(driver_key, "Type", 1ul);
+
+	UNICODE_STRING driver_service_name;
+	RtlInitUnicodeString(&driver_service_name, L"\\registry\\machine\\SYSTEM\\CurrentControlSet\\Services\\Capcom");
+
+	return native::ZwLoadDriver(&driver_service_name) == 0;
+}
+
+auto capcom::resource::unload() -> bool
+{
+	auto process_token = native::security::open_token(GetCurrentProcess(), TOKEN_ADJUST_PRIVILEGES);
+	native::security::set_privilege(process_token, "SeLoadDriverPrivilege", true);
+
+	UNICODE_STRING driver_service_name;
+	RtlInitUnicodeString(&driver_service_name, L"\\registry\\machine\\SYSTEM\\CurrentControlSet\\Services\\Capcom");
+
+	if (native::ZwUnloadDriver(&driver_service_name) != 0)
+	{
+		return false;
+	}
+
+	auto services_key = native::registry::get_key(HKEY_LOCAL_MACHINE, "SYSTEM\\CurrentControlSet\\Services");
+	return native::registry::remove_key(services_key, "Capcom");
 }
 
 const unsigned char capcom::resource::payload_key = 0x0;

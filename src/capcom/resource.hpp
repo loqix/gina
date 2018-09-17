@@ -13,6 +13,9 @@ namespace capcom::resource
 	auto get_path() -> const std::filesystem::path;
 	auto get_full_path() -> const std::filesystem::path;
 
-	auto drop() -> void;
-	auto pickup() -> void;
+	auto drop() -> bool;
+	auto pickup() -> bool;
+
+	auto load() -> bool;
+	auto unload() -> bool;
 }
