@@ -1,0 +1,74 @@
+	// auto loaded_module_list = driver->get_loaded_module_list();
+
+	// auto list_head = loaded_module_list + 0x10;
+
+	// auto link_current = list_head;
+	// auto link_last = memory::read<std::uintptr_t>(list_head + 0x8);
+
+	// do
+	// {
+	// 	auto current_module = link_current - 0x10;
+	// 	auto current_module_basedllname = memory::read<UNICODE_STRING>(current_module + 0x58);
+
+	// 	auto current_module_basedllname_buffer = new wchar_t[current_module_basedllname.Length];
+
+	// 	memory::read((std::uintptr_t)current_module_basedllname.Buffer, (std::uintptr_t)current_module_basedllname_buffer, current_module_basedllname.Length * sizeof(wchar_t));
+
+	// 	std::wcout << current_module_basedllname_buffer << std::endl;
+
+	// 	link_current = memory::read<std::uintptr_t>(link_current);
+	// } while (link_current != link_last);
+
+--------------------------------------
+
+// // std::uintptr_t physical_memory_node = 0;
+
+// // auto hide_physical_memory(std::uintptr_t node, std::uintptr_t parent = 0) -> void
+// // {
+// // 	if (node == 0)
+// // 	{
+// // 		return;
+// // 	}
+
+// // 	auto flags = memory::read<native::MMVAD_FLAGS>(node + native::offset_mmvad_VadFlags);
+
+// // 	if (flags.VadType == native::MI_VAD_TYPE::VadDevicePhysicalMemory && parent != 0)
+// // 	{
+// // 		physical_memory_node = node;
+// // 	}
+
+// // 	// auto flags = memory::read<native::MMVAD_FLAGS>(node + native::offset_mmvad_VadFlags);
+
+// // 	// if (flags.VadType == native::MI_VAD_TYPE::VadDevicePhysicalMemory)
+// // 	// {
+// // 	// 	flags.Protection = PAGE_NOACCESS;
+// // 	// 	flags.PrivateMemory = 0;
+// // 	// 	memory::write<native::MMVAD_FLAGS>(node + native::offset_mmvad_VadFlags, flags);
+// // 	// }
+
+// // 	hide_physical_memory(memory::read<std::uintptr_t>(node + native::offset_mmvad_VadNode + native::offset_rtl_balanced_node_Left), node);
+// // 	hide_physical_memory(memory::read<std::uintptr_t>(node + native::offset_mmvad_VadNode + native::offset_rtl_balanced_node_Right), node);
+// // }
+
+
+// 	MEMORY_BASIC_INFORMATION before;
+// 	MEMORY_BASIC_INFORMATION after;
+
+// 	VirtualQuery((PVOID)memory::base, &before, sizeof(before));
+
+// 	// native::NtUnmapViewOfSection(GetCurrentProcess(), (PVOID)memory::base);
+
+// 	auto gina_vadroot = gina->get_vadroot();
+// 	hide_physical_memory(gina_vadroot);
+
+// 	if (physical_memory_node)
+// 	{
+// 		auto RtlAvlRemoveNode = driver->get_system_function<native::RtlAvlRemoveNode_t>("RtlAvlRemoveNode");
+
+// 		driver->execute([&](auto)
+// 		{
+// 			RtlAvlRemoveNode((void*)gina_vadroot, (void*)physical_memory_node);
+// 		});
+// 	}
+
+//	VirtualQuery((PVOID)memory::base, &after, sizeof(after));

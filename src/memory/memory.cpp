@@ -7,76 +7,93 @@ std::uintptr_t memory::base = 0;
 std::size_t memory::size = 0;
 
 std::uintptr_t memory::system_process_eprocess = 0;
-std::uintptr_t memory::system_process_cr3 = 0;
+std::uintptr_t memory::system_process_pml4_table_base = 0;
 
-auto memory::translate_address(std::uintptr_t address, std::uintptr_t cr3) -> std::uintptr_t
+auto memory::lookup_virtual_address(std::uintptr_t virtual_address, std::uintptr_t pml4_table_base) -> virtual_address_descriptor
 {
-	if (cr3 == 0)
+	if (pml4_table_base == 0)
 	{
-		cr3 = system_process_cr3;
+		pml4_table_base = system_process_pml4_table_base;
 	}
 
-	std::int16_t pml4 = (address >> 39) & 0x1FF;
-	std::int16_t directory_pointer = (address >> 30) & 0x1FF;
-	std::int16_t directory = (address >> 21) & 0x1FF;
-	std::int16_t table = (address >> 12) & 0x1FF;
+	virtual_address_descriptor descriptor = {
+		virtual_address = virtual_address
+	};
 
-	auto pml4e = read_physical<std::uintptr_t>(cr3 + pml4 * sizeof(std::uintptr_t));
-	if (pml4e == 0)
+	std::int16_t pml4 = (virtual_address >> 39) & 0x1FF;
+	std::int16_t directory_pointer = (virtual_address >> 30) & 0x1FF;
+	std::int16_t directory = (virtual_address >> 21) & 0x1FF;
+	std::int16_t table = (virtual_address >> 12) & 0x1FF;
+
+	descriptor.pml4e = physical_reference<native::MMPTE>(pml4_table_base + pml4 * sizeof(native::MMPTE));
+
+	if (!descriptor.pml4e->Hardware.Valid)
 	{
-		return 0;
+		descriptor.physical_address = 0;
+		return descriptor;
 	}
 
-	auto pdpte = read_physical<std::uintptr_t>((pml4e & 0xFFFFFFFFFF000) + directory_pointer * sizeof(std::uintptr_t));
-	if (pdpte == 0)
+	descriptor.pdpte = physical_reference<native::MMPTE>((descriptor.pml4e->Hardware.PageFrameNumber << 12) + directory_pointer * sizeof(native::MMPTE));
+
+	if (!descriptor.pdpte->Hardware.Valid)
 	{
-		return 0;
+		descriptor.physical_address = 0;
+		return descriptor;
 	}
 
-	if ((pdpte & (1 << 7)) != 0)
+	if (descriptor.pdpte->Hardware.LargePage)
 	{
-		return (pdpte & 0xFFFFFC0000000) + (address & 0x3FFFFFFF);
+		descriptor.physical_address = (descriptor.pdpte->Long & 0xFFFFFC0000000) + (virtual_address & 0x3FFFFFFF);
+		return descriptor;
 	}
 
-	auto pde = read_physical<std::uintptr_t>((pdpte & 0xFFFFFFFFFF000) + directory * sizeof(std::uintptr_t));
-	if (pde == 0)
+	descriptor.pde = physical_reference<native::MMPTE>((descriptor.pdpte->Hardware.PageFrameNumber << 12) + directory * sizeof(native::MMPTE));
+
+	if (!descriptor.pde->Hardware.Valid)
 	{
-		return 0;
+		descriptor.physical_address = 0;
+		return descriptor;
 	}
 
-	if ((pde & (1 << 7)) != 0)
+	if (descriptor.pde->Hardware.LargePage)
 	{
-		return (pde & 0xFFFFFFFE00000) + (address & 0x1FFFFF);
+		descriptor.physical_address = (descriptor.pde->Long & 0xFFFFFFFE00000) + (virtual_address & 0x1FFFFF);
+		return descriptor;
 	}
 
-	auto pte = read_physical<std::uintptr_t>((pde & 0xFFFFFFFFFF000) + table * sizeof(std::uintptr_t));
-	if (pte == 0)
+	descriptor.pte = physical_reference<native::MMPTE>((descriptor.pde->Hardware.PageFrameNumber << 12) + table * sizeof(native::MMPTE));
+
+	if (!descriptor.pte->Hardware.Valid)
 	{
-		return 0;
+		descriptor.physical_address = 0;
+		return descriptor;
 	}
 
-	return (pte & 0xFFFFFFFFFF000) + (address & 0xFFF);
+	descriptor.physical_address = (descriptor.pte->Hardware.PageFrameNumber << 12) + (virtual_address & 0xFFF);
+	return descriptor;
 }
 
 auto memory::find_eprocess(std::uintptr_t process_id) -> std::uintptr_t
 {
-	auto list_head = system_process_eprocess + offset_eprocess_ActiveProcessLinks;
+	auto list_head_address = system_process_eprocess + native::offset_eprocess_ActiveProcessLinks;
 
-	auto link_current = list_head;
-	auto link_last = read<std::uintptr_t>(list_head + offset_list_entry_Blink);
+	auto link_current_address = list_head_address;
+	auto link_current = memory::read<native::LIST_ENTRY>(link_current_address);
+	auto link_last = link_current.Blink;
 
 	do
 	{
-		auto current_eprocess = link_current - offset_eprocess_ActiveProcessLinks;
-		auto current_eprocess_process_id = read<std::uintptr_t>(current_eprocess + offset_eprocess_UniqueProcessId);
+		auto current_eprocess = link_current_address - native::offset_eprocess_ActiveProcessLinks;
+		auto current_eprocess_process_id = read<std::uintptr_t>(current_eprocess + native::offset_eprocess_UniqueProcessId);
 
 		if (current_eprocess_process_id == process_id)
 		{
 			return current_eprocess;
 		}
 
-		link_current = memory::read<std::uintptr_t>(link_current);
-	} while (link_current != link_last);
+		link_current_address = (std::uintptr_t)link_current.Flink;
+		link_current = memory::read<native::LIST_ENTRY>(link_current_address);
+	} while (link_current.Flink != link_last);
 
 	return 0;
 }

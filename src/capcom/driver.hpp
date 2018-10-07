@@ -40,7 +40,7 @@ namespace capcom
 		auto get_physical_memory_size() -> std::size_t;
         auto map_physical_memory(std::uintptr_t base, std::size_t size) -> std::uintptr_t;
 		auto get_system_process_eprocess() -> std::uintptr_t;
-		auto get_system_process_cr3() -> std::uintptr_t;
+		auto get_system_process_pml4_table_base() -> std::uintptr_t;
 		auto get_loaded_module_list() -> std::uintptr_t;
 
 	private:

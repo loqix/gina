@@ -1,0 +1,35 @@
+    static
+        NTSTATUS NtQueryVirtualMemoryHook(
+            HANDLE hProcess,
+            PVOID pBaseAddress,
+            MEMORY_INFORMATION_CLASS memoryInformationClass,
+            PVOID pMemoryInformation,
+            SIZE_T memoryInformationLength,
+            PSIZE_T pReturnLength)
+    {
+        const auto fMmQueryVirtualMemory = FindOrignalCall(NtQueryVirtualMemoryHook);
+
+        NTSTATUS status = fMmQueryVirtualMemory(hProcess, pBaseAddress, memoryInformationClass, pMemoryInformation, memoryInformationLength, pReturnLength);
+
+        if (!NT_SUCCESS(status) || memoryInformationClass != MemoryBasicInformation || !pMemoryInformation)
+            return status;
+
+        if (g_gameProcessId && GetProcessIdByHandle(hProcess) == g_gameProcessId &&
+            g_pPageToHide && g_pageSize > 0)
+        {
+            PMEMORY_BASIC_INFORMATION pMemoryBasicInformation = reinterpret_cast<PMEMORY_BASIC_INFORMATION>(pMemoryInformation);
+
+            if (reinterpret_cast<DWORD64>(pMemoryBasicInformation->BaseAddress) >= reinterpret_cast<DWORD64>(g_pPageToHide) &&
+                reinterpret_cast<DWORD64>(pMemoryBasicInformation->BaseAddress) <= (reinterpret_cast<DWORD64>(g_pPageToHide) + g_pageSize))
+            {
+                pMemoryBasicInformation->AllocationProtect = PAGE_NOACCESS;
+                pMemoryBasicInformation->State = MEM_FREE;
+                pMemoryBasicInformation->Protect = 0;
+                pMemoryBasicInformation->Type = MEM_PRIVATE;
+
+                HYPERPLATFORM_LOG_INFO("[NtQueryVirtualMemory] Page hidden.");
+            }
+        }
+
+        return status;
+    }

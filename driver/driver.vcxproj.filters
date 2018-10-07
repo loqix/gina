@@ -1,0 +1,23 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Include">
+      <UniqueIdentifier>{b7e17437-db3c-4555-9fd0-40e3b20f6b54}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\Native">
+      <UniqueIdentifier>{1777770d-b977-4802-9b7d-a2c21fcfed88}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ImageLoader">
+      <UniqueIdentifier>{8be939a3-549a-412d-a84a-7412ef2ad186}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core">
+      <UniqueIdentifier>{5f2d2fea-d59d-40a3-a70f-9d75f5fdedf4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Helpers">
+      <UniqueIdentifier>{2ad9b16d-24eb-4a97-bb5b-d815b83b78c7}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="driver.c" />
+  </ItemGroup>
+</Project>

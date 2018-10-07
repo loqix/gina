@@ -5,24 +5,38 @@
 #include <cstdint>
 #include <string>
 
+#include "../native/native.hpp"
+
 namespace memory
 {
-	constexpr std::uintptr_t offset_eprocess_DirectoryTableBase = 0x28;
-	constexpr std::uintptr_t offset_eprocess_UniqueProcessId = 0x02E8;
-	constexpr std::uintptr_t offset_eprocess_ActiveProcessLinks = 0x2F0;
-	constexpr std::uintptr_t offset_eprocess_Peb = 0x3F8;
-	constexpr std::uintptr_t offset_eprocess_VadRoot = 0x610;
-
-	constexpr std::uintptr_t offset_list_entry_Flink = 0x0;
-	constexpr std::uintptr_t offset_list_entry_Blink = 0x8;
-
-	constexpr std::uintptr_t offset_peb_ImageBaseAddress = 0x10;
-
 	extern std::uintptr_t base;
 	extern std::size_t size;
 
 	extern std::uintptr_t system_process_eprocess;
-	extern std::uintptr_t system_process_cr3;
+	extern std::uintptr_t system_process_pml4_table_base;
+
+	struct virtual_address_descriptor
+	{
+		std::uintptr_t virtual_address;
+		std::uintptr_t physical_address;
+		native::MMPTE* pml4e;
+		native::MMPTE* pdpte;
+		native::MMPTE* pde;
+		native::MMPTE* pte;
+	};
+
+	auto lookup_virtual_address(std::uintptr_t virtual_address, std::uintptr_t pml4_table_base = 0)->virtual_address_descriptor;
+
+	inline auto translate_virtual_address(std::uintptr_t virtual_address, std::uintptr_t pml4_table_base = 0) -> std::uintptr_t
+	{
+		return lookup_virtual_address(virtual_address, pml4_table_base).physical_address;
+	}
+
+	template<typename T>
+	inline auto physical_reference(std::uintptr_t address) -> T*
+	{
+		return (T*)(memory::base + address);
+	}
 
 	inline auto read_physical(std::uintptr_t address, std::uintptr_t buffer, std::size_t size) -> void
 	{
@@ -48,30 +62,28 @@ namespace memory
 		write_physical(address, &value, sizeof(T));
 	}
 
-	auto translate_address(std::uintptr_t address, std::uintptr_t cr3 = 0) -> std::uintptr_t;
-
-	inline auto read(std::uintptr_t address, std::uintptr_t buffer, std::size_t size, std::uintptr_t cr3 = 0) -> void
+	inline auto read(std::uintptr_t address, std::uintptr_t buffer, std::size_t size, std::uintptr_t pml4_table_base = 0) -> void
 	{
-		read_physical(translate_address(address, cr3), buffer, size);
+		read_physical(translate_virtual_address(address, pml4_table_base), buffer, size);
 	}
 
 	template<typename T>
-	inline auto read(std::uintptr_t address, std::uintptr_t cr3 = 0) -> T
+	inline auto read(std::uintptr_t address, std::uintptr_t pml4_table_base = 0) -> T
 	{
 		T buffer;
-		read(address, (std::uintptr_t)&buffer, sizeof(T), cr3);
+		read(address, (std::uintptr_t)&buffer, sizeof(T), pml4_table_base);
 		return buffer;
 	}
 
-	inline auto write(std::uintptr_t address, std::uintptr_t buffer, std::size_t size, std::uintptr_t cr3 = 0)
+	inline auto write(std::uintptr_t address, std::uintptr_t buffer, std::size_t size, std::uintptr_t pml4_table_base = 0)
 	{
-		write_physical(translate_address(address, cr3), buffer, size);
+		write_physical(translate_virtual_address(address, pml4_table_base), buffer, size);
 	}
 
 	template<typename T>
-	inline auto write(std::uintptr_t address, const T& value, std::uintptr_t cr3 = 0)
+	inline auto write(std::uintptr_t address, const T& value, std::uintptr_t pml4_table_base = 0)
 	{
-		write(address, (std::uintptr_t)&value, sizeof(T), cr3);
+		write(address, (std::uintptr_t)&value, sizeof(T), pml4_table_base);
 	}
 
 	// scan range

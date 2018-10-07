@@ -5,6 +5,8 @@ VisualStudioVersion = 15.0.28010.2016
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "gina", "src\gina.vcxproj", "{7D39A9C9-1054-402C-BB8C-F836864320BF}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "driver", "driver\driver.vcxproj", "{50429DDC-D8EC-4926-B913-D7ADE6A3DC9F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -15,6 +17,12 @@ Global
 		{7D39A9C9-1054-402C-BB8C-F836864320BF}.Debug|x64.Build.0 = Debug|x64
 		{7D39A9C9-1054-402C-BB8C-F836864320BF}.Release|x64.ActiveCfg = Release|x64
 		{7D39A9C9-1054-402C-BB8C-F836864320BF}.Release|x64.Build.0 = Release|x64
+		{50429DDC-D8EC-4926-B913-D7ADE6A3DC9F}.Debug|x64.ActiveCfg = Debug|x64
+		{50429DDC-D8EC-4926-B913-D7ADE6A3DC9F}.Debug|x64.Build.0 = Debug|x64
+		{50429DDC-D8EC-4926-B913-D7ADE6A3DC9F}.Debug|x64.Deploy.0 = Debug|x64
+		{50429DDC-D8EC-4926-B913-D7ADE6A3DC9F}.Release|x64.ActiveCfg = Release|x64
+		{50429DDC-D8EC-4926-B913-D7ADE6A3DC9F}.Release|x64.Build.0 = Release|x64
+		{50429DDC-D8EC-4926-B913-D7ADE6A3DC9F}.Release|x64.Deploy.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -103,10 +103,9 @@ auto capcom::driver::map_physical_memory(std::uintptr_t base, std::size_t size) 
 	OBJECT_ATTRIBUTES physical_memory_attributes = { 0 };
 	InitializeObjectAttributes(&physical_memory_attributes, &physical_memory_name, OBJ_CASE_INSENSITIVE, NULL, NULL);
 
-	HANDLE physical_memory_handle;
-
 	auto ZwOpenSection = get_system_function<native::ZwOpenSection_t>("ZwOpenSection");
-	auto ZwClose = get_system_function<native::ZwClose_t>("ZwClose");
+
+	HANDLE physical_memory_handle;
 
 	execute([&](auto)
 	{
@@ -115,12 +114,9 @@ auto capcom::driver::map_physical_memory(std::uintptr_t base, std::size_t size) 
 
 	size -= 0x1000;
 
-	NtMapViewOfSection(physical_memory_handle, GetCurrentProcess(), &base, 0, 0, NULL, &size, native::SECTION_INHERIT::ViewUnmap, NULL, PAGE_READWRITE);
+	native::NtMapViewOfSection(physical_memory_handle, GetCurrentProcess(), &base, 0, 0, NULL, &size, native::SECTION_INHERIT::ViewUnmap, NULL, PAGE_READWRITE);
 
-	execute([&](auto)
-	{
-		ZwClose(physical_memory_handle);
-	});
+	CloseHandle(physical_memory_handle);
 
 	return base;
 }
@@ -137,17 +133,17 @@ auto capcom::driver::get_system_process_eprocess() -> std::uintptr_t
 	return PsInitialSystemProcess;
 }
 
-auto capcom::driver::get_system_process_cr3() -> std::uintptr_t
+auto capcom::driver::get_system_process_pml4_table_base() -> std::uintptr_t
 {
-	std::uintptr_t system_process_cr3 = 0;
+	std::uintptr_t system_process_pml4_table_base = 0;
 	auto system_process_eprocess = get_system_process_eprocess();
 
 	execute([&](auto)
 	{
-		system_process_cr3 = *(std::uintptr_t*)(system_process_eprocess + memory::offset_eprocess_DirectoryTableBase);
+		system_process_pml4_table_base = *(std::uintptr_t*)(system_process_eprocess + native::offset_eprocess_DirectoryTableBase);
 	});
 
-	return system_process_cr3;
+	return system_process_pml4_table_base;
 }
 
 auto capcom::driver::get_loaded_module_list() -> std::uintptr_t

@@ -13,7 +13,12 @@ namespace memory
 	public:
 		process(std::uintptr_t eprocess) : eprocess(eprocess)
 		{
-			directorytablebase = memory::read<std::uintptr_t>(eprocess + memory::offset_eprocess_DirectoryTableBase);
+			directorytablebase = memory::read<std::uintptr_t>(eprocess + native::offset_eprocess_DirectoryTableBase);
+		}
+
+		inline auto translate_virtual_address(std::uintptr_t address) -> std::uintptr_t
+		{
+			return memory::translate_virtual_address(address, directorytablebase);
 		}
 
 		inline auto read(std::uintptr_t address, std::uintptr_t buffer, std::size_t size) -> void
@@ -52,22 +57,22 @@ namespace memory
 
 		inline auto get_uniqueprocessid() -> std::uintptr_t
 		{
-			return memory::read<std::uintptr_t>(eprocess + memory::offset_eprocess_UniqueProcessId);
+			return memory::read<std::uintptr_t>(eprocess + native::offset_eprocess_UniqueProcessId);
 		}
 
 		inline auto get_peb() -> std::uintptr_t
 		{
-			return memory::read<std::uintptr_t>(eprocess + memory::offset_eprocess_Peb);
+			return memory::read<std::uintptr_t>(eprocess + native::offset_eprocess_Peb);
 		}
 
 		inline auto get_vadroot() -> std::uintptr_t
 		{
-			return memory::read<std::uintptr_t>(eprocess + memory::offset_eprocess_VadRoot);
+			return memory::read<std::uintptr_t>(eprocess + native::offset_eprocess_VadRoot);
 		}
 
 		inline auto get_image_base() -> std::uintptr_t
 		{
-			return read<std::uintptr_t>(get_peb() + memory::offset_peb_ImageBaseAddress);
+			return read<std::uintptr_t>(get_peb() + native::offset_peb_ImageBaseAddress);
 		}
 	};
 }
